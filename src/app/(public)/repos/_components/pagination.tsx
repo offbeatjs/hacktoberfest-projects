@@ -2,33 +2,30 @@
 
 import { Button } from '@/app/(public)/_components/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
-import type { SearchParams } from '@/types';
+import { useQueryState } from 'nuqs';
 
 const MAX_PER_PAGE = 21;
 interface PaginationProps {
   page: number;
   totalCount: number;
-  searchParams: SearchParams;
 }
 
 export function Pagination({
   page,
-  totalCount,
-  searchParams
+  totalCount
 }: PaginationProps) {
-  const router = useRouter();
+  const [, setPageParam] = useQueryState('p', {
+    defaultValue: '1',
+    parse: (value: string) => value,
+    serialize: (value: string) => value
+  });
   const [isPending, startTransition] = useTransition();
 
   function changePage(delta: number) {
-    const params = new URLSearchParams(
-      Object.entries(searchParams).map(([k, v]) => [k, String(v)])
-    );
-    params.set('p', String(page + delta));
-
+    const newPage = page + delta;
     startTransition(() => {
-      router.push(`?${params.toString()}`);
+      void setPageParam(String(newPage));
     });
   }
 
